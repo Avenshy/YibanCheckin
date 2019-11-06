@@ -1,13 +1,13 @@
 import urllib.request
 import json
 import configparser
+import os
 
 def YibanCheckin():
     username = input('Username: ')
     password = input('Password: ')
     print('Login......',end='')
-    url = 'https://mobile.yiban.cn/api/v2/passport/login?account=' + username + '&passwd=' + password + '&v=9.9.9&ct=9' #+
-                                                                                                                        #'&ct=0&app=0&v=4.6.13&apn=wifi&identify=123456789&sig=a47a6db4540b4e7e&token=&device=unknown%3Aunknown&sversion=28'
+    url = 'https://mobile.yiban.cn/api/v2/passport/login?account=' + username + '&passwd=' + password + '&v=9.9.9&ct=99' # + '&app=0&apn=wifi&identify=123456789&sig=a47a6db4540b4e7e&token=&device=unknown%3Aunknown&sversion=28'
     req = urllib.request.Request(url)
     with urllib.request.urlopen(req) as response:
         data = response.read()
@@ -17,17 +17,22 @@ def YibanCheckin():
         config = configparser.ConfigParser()
         config.read('option.ini')
         if(config.has_section(username) == False):
-            if(input('Save your user&pass? Press Y or N.').upper() == 'Y'):
-                config.add_section(username)
-                config.set(username,'password',password)
-                with open('option.ini','w+') as f:
-                    config.write(f)
+            back = ''
+            while back not in ['Y','N']:
+                back = input('Save your user&pass? Press Y or N.').upper()
+                if(back == 'Y'):
+                    config.add_section(username)
+                    config.set(username,'password',password)
+                    with open('option.ini','w+') as f:
+                        config.write(f)
+                    break
+                elif(back == 'N'):
+                    break
         else:
             if(config.get(username,'password') != password):
                 config.set(username,'password',password)
                 with open('option.ini','w+') as f:
                     config.write(f)
-    
         json_data = json.loads('%s' % json_data)
         json_data = json_data['data']
         token = json_data['access_token']
@@ -85,8 +90,8 @@ def YibanCheckin_Auto():
         i+=1
         print(i,username,end=' ')
         password = config.get(username,'password')
-        url = 'https://mobile.yiban.cn/api/v2/passport/login?account=' + username + '&passwd=' + password + '&v=9.9.9&ct=9' #+
-                                                                                                                            #'&ct=0&app=0&v=4.6.13&apn=wifi&identify=123456789&sig=a47a6db4540b4e7e&token=&device=unknown%3Aunknown&sversion=28'
+        url = 'https://mobile.yiban.cn/api/v2/passport/login?account=' + username + '&passwd=' + password + '&v=9.9.9&ct=99' #+
+                                                                                                                             #'&ct=0&app=0&v=4.6.13&apn=wifi&identify=123456789&sig=a47a6db4540b4e7e&token=&device=unknown%3Aunknown&sversion=28'
         req = urllib.request.Request(url)
         with urllib.request.urlopen(req) as response:
             data = response.read()
@@ -147,9 +152,16 @@ try:
 except IOError:
     YibanCheckin()
     exit(0)
-if(input('Auto mode? Press Y or N.').upper() == 'Y'):
-    YibanCheckin_Auto()
-    exit(0)
-else:
-    YibanCheckin()
-    exit(0)
+back = ''
+while back not in ['Y','N']:
+    back = input('Auto mode? Press Y or N.').upper()
+    if(back == 'Y'):
+        YibanCheckin_Auto()
+        print('\n\n\nFinish!!')
+        os.system('pause')
+        exit(0)
+    elif(back == 'N'):
+        YibanCheckin()
+        print('\n\n\nFinish!!')
+        os.system('pause')
+        exit(0)
